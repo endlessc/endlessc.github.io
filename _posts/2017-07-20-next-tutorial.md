@@ -1,177 +1,134 @@
----
-title: Next Theme Tutorial
-description: NexT is a high quality elegant Jekyll theme ported from Hexo Next. It is crafted from scratch, with love.
-categories:
- - tutorial
-tags:
----
+# Hadoop2.7.4之集群搭建（伪分布式）
+### 1. 下载Hadoop
 
-> NexT is a high quality elegant [Jekyll](https://jekyllrb.com) theme ported from [Hexo Next](https://github.com/iissnan/hexo-theme-next). It is crafted from scratch, with love.
+[下载地址](http://hadoop.apache.org/releases.html)
 
-<!-- more -->
+### 2. 安装Hadoop
+	tar -zxvf hadoop-2.7.4.tar.gz -C /opt/soft
+### 3. 查看Hadoop是32 or 64 位
+```
+	cd /opt/soft/hadoop-2.7.2/lib/native
+	file libhadoop.so.1.0.0
+```
+	 vi /etc/hosts
+### 5. 配置启动Hadoop
+	需要配置的文件（ore-site.xml、hdfs-site.xml、mapred-site.xml、yarn-site.xml）
 
-[Live Preview](http://simpleyyt.github.io/jekyll-theme-next/)
-
-## Screenshots
-
-* Desktop
-![Desktop Preview](http://iissnan.com/nexus/next/desktop-preview.png)
-
-* Sidebar
-
-![Desktop Sidebar Preview](http://iissnan.com/nexus/next/desktop-sidebar-preview.png)
-
-* Sidebar (Post details page)
-
-![Desktop Sidebar Preview](http://iissnan.com/nexus/next/desktop-sidebar-toc.png)
-
-* Mobile
-
-![Mobile Preview](http://iissnan.com/nexus/next/mobile.png)
-
-
-## Installation
-
-Check whether you have `Ruby 2.1.0` or higher installed:
-
-```sh
-ruby --version
+	1. 修改hadoop2.7.2/etc/hadoop/hadoop-env.sh指定JAVA_HOME
+		export JAVA_HOME=/usr/java/jdk1.8.0_152
+	2. 修改hdfs的配置文件
+		1. 修改hadoop2.7.2/etc/hadoop/core-site.xml 如下：
+```
+      <configuration>
+				<!-- 指定HDFS(namenode)的通信地址，本次搭建用的本机IP地址 -->
+				<property>
+					<name>fs.defaultFS</name>
+					<value>hdfs://centos7-hadoop:9000</value>
+				</property>
+				<!-- 指定hadoop运行时产生文件的存储路径，要和下面的[dfs.namenode.name.dir]的配置路径一致 -->
+				<property>
+					<name>hadoop.tmp.dir</name>
+					<value>file:/usr/local/hadoop/tmp/dfs/data</value>
+				</property>
+			</configuration>
+```
+			这里fs.defaultFS的value最好是写本机的静态IP，当然写本机主机名，再配置hosts是最好的，如果用localhost，然后在windows用java操作hdfs的时候，会连接不上主机。
+		2. 修改hdfs-site.xml
+```
+			<configuration>
+			   <property>
+				   <name>dfs.replication</name>
+				   <value>1</value>
+			   </property>
+			   <property>
+				   <name>dfs.namenode.name.dir</name>
+				   <value>file:/usr/local/hadoop/tmp/dfs/name</value>
+			   </property>
+			   <property>
+				   <name>dfs.datanode.data.dir</name>
+				   <value>file:/usr/local/hadoop/tmp/dfs/data</value>
+			   </property>
+			</configuration>
+```
+		3. 修改mapred-site.xml(没有则复制一份mapred-site.xml.template并命名为mapred-site.xml)
+```
+			<configuration>  
+				<property>     
+					   <name>mapreduce.framework.name</name>   
+					   <value>yarn</value>      
+				</property>  
+			</configuration>
+```
+		4. 修改yarn-site.xml  
+```
+			<configuration>  
+    			<property>  
+				   <name>yarn.nodemanager.aux-services</name>  
+				   <value>mapreduce_shuffle</value>  
+				</property>  
+				<property>  
+				   <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>  
+				   <value>org.apache.hadoop.mapred.ShuffleHandler</value>  
+				</property>  
+			</configuration>  
+```
+### 6. 配置SSH免密码登录
+```
+		ssh-keygen -t dsa -P '' -f ~/.ssh/id_dsa
+		cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+		chmod 0600 ~/.ssh/authorized_keys
+```
+### 7. HDFS文件系统格式化和系统启动
+	1. 下面进行HDFS文件系统进行格式化：
+			$bin/hdfs namenode -format
+	
+	2. 然后启用NameNode及DataNode进程：
+			[root@e788119a834d hadoop-2.7.4]# ./sbin/start-dfs.sh
+			[root@e788119a834d hadoop-2.7.4]# ./sbin/start-yarn.sh
+	
+		启动进程之后用jps命令查看进程情况，出现6个进程名字说明启动成功
+```
+		17041 NameNode
+		17361 SecondaryNameNode
+		10724 ResourceManager
+		17178 DataNode
+		17676 NodeManager
+		17903 Jps
 ```
 
-Install `Bundler`:
-
-```sh
-gem install bundler
-```
-
-Clone Jacman theme:
-
-```sh
-git clone https://github.com/Simpleyyt/jekyll-theme-next.git
-cd jekyll-theme-next
-```
-
-Install Jekyll and other dependencies from the GitHub Pages gem:
-
-```sh
-bundle install
-```
-
-Run your Jekyll site locally:
-
-```sh
-bundle exec jekyll server
-```
-
-More Details：[Setting up your GitHub Pages site locally with Jekyll](https://help.github.com/articles/setting-up-your-github-pages-site-locally-with-jekyll/)
+### 8. 集成HBase
+	1. 安装过程
 
 
-## Features
+### 9. 安装过程中碰到的问题
+	1. 关闭防火墙
 
-### Multiple languages support, including: English / Russian / French / German / Simplified Chinese / Traditional Chinese.
+```java
+	firewall-cmd --state
+	systemctl stop firewalld.service
 
-Default language is English.
+2. 9000端口拒绝访问
+	配置/etc/hosts文件，添加0.0.0.0 centos7-hadoop的域名映射
 
-```yml
-language: en
-# language: zh-Hans
-# language: fr-FR
-# language: zh-hk
-# language: zh-tw
-# language: ru
-# language: de
-```
+3. 域名映射问题
+	- 修改主机名称
+		vim /etc/hostname
 
-Set `language` field as following in site `_config.yml` to change to Chinese.
+	- 修改域名映射
+		vim /etc/hosts
+		127.0.0.1   localhost
+		::1         localhost.localdomain
+		0.0.0.0     centos7-hadoop
 
-```yml
-language: zh-Hans
-```
-
-### Comment support.
-
-NexT has native support for `DuoShuo` and `Disqus` comment systems.
-
-Add the following snippets to your `_config.yml`:
-
-```yml
-duoshuo:
-  enable: true
-  shortname: your-duoshuo-shortname
-```
-
-OR
-
-```yml
-disqus_shortname: your-disqus-shortname
-```
-
-### Social Media
-
-NexT can automatically add links to your Social Media accounts:
-
-```yml
-social:
-  GitHub: your-github-url
-  Twitter: your-twitter-url
-  Weibo: your-weibo-url
-  DouBan: your-douban-url
-  ZhiHu: your-zhihu-url
-```
-
-### Feed link.
-
-> Show a feed link.
-
-Set `rss` field in theme's `_config.yml`, as the following value:
-
-1. `rss: false` will totally disable feed link.
-2. `rss:  ` use sites' feed link. This is the default option.
-
-    Follow the installation instruction in the plugin's README. After the configuration is done for this plugin, the feed link is ready too.
-
-3. `rss: http://your-feed-url` set specific feed link.
-
-### Up to 5 code highlight themes built-in.
-
-NexT uses [Tomorrow Theme](https://github.com/chriskempson/tomorrow-theme) with 5 themes for you to choose from.
-Next use `normal` by default. Have a preview about `normal` and `night`:
-
-![Tomorrow Normal Preview](http://iissnan.com/nexus/next/tomorrow-normal.png)
-![Tomorrow Night Preview](http://iissnan.com/nexus/next/tomorrow-night.png)
-
-Head over to [Tomorrow Theme](https://github.com/chriskempson/tomorrow-theme) for more details.
-
-## Configuration
-
-NexT comes with few configurations.
-
-```yml
-
-# Menu configuration.
-menu:
-  home: /
-  archives: /archives
-
-# Favicon
-favicon: /favicon.ico
-
-# Avatar (put the image into next/source/images/)
-# can be any image format supported by web browsers (JPEG,PNG,GIF,SVG,..)
-avatar: /default_avatar.png
-
-# Code highlight theme
-# available: normal | night | night eighties | night blue | night bright
-highlight_theme: normal
-
-# Fancybox for image gallery
-fancybox: true
-
-# Specify the date when the site was setup
-since: 2013
+4. HBase安装问题
+	- zookeeper服务器连接异常
 
 ```
+```
+java.net.ConnectException: 拒绝连接
+at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method)
+at sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:692)
+at org.apache.zookeeper.ClientCnxnSocketNIO.doTransport(ClientCnxnSocketNIO.java:350)
+at org.apache.zookeeper.ClientCnxn$SendThread.run(ClientCnxn.java:1068)
 
-## Browser support
-
-![Browser support](http://iissnan.com/nexus/next/browser-support.png)
+```
