@@ -109,41 +109,41 @@ tag: 博客
      ```
 
      以上代码用来向数据库中插入**LineString**类型的数据，**update**方法类似，主要关注的地方是将MySql自带的转换函数加入到**MyBatis**的**sql mapper**中，使**MyBatis**可以生成适配**Geometry**类型的sql语句。**MySql**关于**Geometry**类型数据处理的相关函数可参看[官方文档](https://dev.mysql.com/doc/refman/8.0/en/spatial-function-reference.html))，可以根据自己的需求适配不同的数据类型，**MySql**支持的[数据类型](https://dev.mysql.com/doc/refman/8.0/en/spatial-type-overview.html)见文档。
-3. 配置typeHandler 
-   1. 本例子基于**SpringBoot**构建，在**application.yml**中配置自定义handler，配置片段如下：
+  3. 配置typeHandler 
+     1. 本例子基于**SpringBoot**构建，在**application.yml**中配置自定义handler，配置片段如下：
 
-      ```yml
-      # mybatis-plus配置
-      mybatis-plus:
-      # mapper对应文件
-      mapper-locations: classpath:mapper/*.xml
-      # 实体扫描，多个package用逗号或者分号分隔
-      type-aliases-package: com.sanygroup.pdds.system.model
-      configuration:
-       log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-      # 配置自定义typehandler
-      type-handlers-package: com.sanygroup.pdds.map.type
-      ```
-   2. Geo类型**Model**中添加注解，代码如下：
+        ```yml
+        # mybatis-plus配置
+        mybatis-plus:
+        # mapper对应文件
+        mapper-locations: classpath:mapper/*.xml
+        # 实体扫描，多个package用逗号或者分号分隔
+        type-aliases-package: com.sanygroup.pdds.system.model
+        configuration:
+         log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+        # 配置自定义typehandler
+        type-handlers-package: com.sanygroup.pdds.map.type
+        ```
+     2. Geo类型**Model**中添加注解，代码如下：
 
-      ```java
-      @ApiModelProperty(value = "路线")
-      @TableField(typeHandler = MysqlGeoLineTypeHandler.class)
-      private List<GeoPoint> line;
-      ```
-   3. **Model Mapper**中添加**TypeHandler**，代码如下：
+        ```java
+        @ApiModelProperty(value = "路线")
+        @TableField(typeHandler = MysqlGeoLineTypeHandler.class)
+        private List<GeoPoint> line;
+        ```
+     3. **Model Mapper**中添加**TypeHandler**，代码如下：
 
-      ```xml
-      <!-- 通用查询映射结果 -->
-      <resultMap id="BaseResultMap" type="com.sanygroup.pdds.map.model.Line">
-          <id column="id" property="id"/>
-          <result column="name" property="name"/>
-          <result column="dev_alarm" property="devAlarm"/>
-          <result column="speed_limit" property="speedLimit"/>
-          <result column="remark" property="remark"/>
-          <result column="line" property="line" typeHandler="com.sanygroup.pdds.map.type.MysqlGeoLineTypeHandler"/>
-      </resultMap>
-      ```
+        ```xml
+        <!-- 通用查询映射结果 -->
+        <resultMap id="BaseResultMap" type="com.sanygroup.pdds.map.model.Line">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="dev_alarm" property="devAlarm"/>
+            <result column="speed_limit" property="speedLimit"/>
+            <result column="remark" property="remark"/>
+            <result column="line" property="line" typeHandler="com.sanygroup.pdds.map.type.MysqlGeoLineTypeHandler"/>
+        </resultMap>
+        ```
 
 - 总结
 
