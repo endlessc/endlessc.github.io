@@ -1,23 +1,23 @@
 # Basic
-title: lelele
+title: lememory
 subtitle: 个人站
 description: 欢迎来到我的个人站~
 # 头像里面的标题
-avatarTitle: lelelele
+avatarTitle: lememory
 # 头像里面的描述
 avatarDesc: Java / Netty
 url: "https://endlessc.github.io/"
 
 # Comment
 comment:
-    disqus: lelelele
+    disqus: lememory
 
 # Social
 social:
     weibo:  
     github: endlessc
     # twitter: 
-    mail: endlessch@hotmail.com
+    mail: zhaoch22@gmail.com
 
 # 百度统计 
 # 使用博客模板请去掉或者更换 id 
